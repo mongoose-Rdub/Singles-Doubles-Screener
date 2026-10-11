@@ -12,10 +12,12 @@ Design, taken from what ten years of data supported:
   * Priority score (0 to 100) = 60% relative strength rank + 40% daily range rank inside the tier. It is an ordering
     aid. Out of sample it raised win rate but not profit per trade, and the dashboard says so.
 
-Outputs (in dashboard_data/): candidates.json, odds.json, byyear.json, signals.json, summary.json
+Outputs (in output/): candidates.json, odds.json, byyear.json, signals.json, summary.json
 """
 import json
+import os
 import pickle
+import store
 import numpy as np
 import pandas as pd
 
@@ -33,8 +35,8 @@ def clean(s):
 
 
 def main():
-    P = pickle.load(open("panel.pkl", "rb"))
-    uni = {r["symbol"]: r for r in json.load(open("universe.json"))}
+    P = pickle.load(open(os.path.join(store.WORK, "panel.pkl"), "rb"))
+    uni = {r["symbol"]: r for r in json.load(open(store.UNIVERSE))}
     need = ["sma150", "atr_pct", "slope150", "stage", "sec_stage", "rs", "stop_pct", "dist_high"]
     P = P.dropna(subset=need)
     P = P[(P.c >= MIN_PRICE) & (P.dvol20 >= MIN_DVOL) & (P.date >= START)].copy()
@@ -170,7 +172,7 @@ def main():
         "d_gap": summ["Double"]["pnl_gap"], "d_gap_se": summ["Double"]["pnl_gap_se"],
         "s_gap": summ["Single"]["pnl_gap"], "s_gap_se": summ["Single"]["pnl_gap_se"],
     }]
-    out = "dashboard_data/"
+    out = store.OUT + "/"
     for name, obj in (("candidates", rows), ("odds", odds), ("byyear", byyear), ("signals", signals), ("summary", summary)):
         json.dump(obj, open(out + name + ".json", "w"))
     print(json.dumps(summary[0], indent=1))

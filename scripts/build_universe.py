@@ -8,7 +8,9 @@ URL = "https://api.nasdaq.com/api/screener/stocks?tableonly=true&limit=10000&off
 MIN_MCAP = 2e9
 
 
-def main(out="universe.json"):
+def main(out=None):
+    import store
+    out = out or store.UNIVERSE
     rows = json.load(urllib.request.urlopen(urllib.request.Request(URL, headers=H), timeout=60))["data"]["rows"]
 
     def mcap(r):

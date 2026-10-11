@@ -3,3 +3,4 @@ __pycache__/
 *.pyc
 bars.json
 universe_raw.json
+work/

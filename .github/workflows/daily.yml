@@ -1,0 +1,38 @@
+name: Daily check
+# Weekdays at 22:00 UTC (6 pm New York in summer, 5 pm in winter), after the market has closed.
+on:
+  schedule:
+    - cron: "0 22 * * 1-5"
+  workflow_dispatch:
+concurrency:
+  group: sd-pipeline
+  cancel-in-progress: false
+permissions:
+  contents: write
+jobs:
+  daily:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pandas numpy
+      - name: Add new trading days
+        run: python scripts/update_prices.py
+      - name: Rebuild panel and candidates
+        run: |
+          python scripts/engine.py
+          python scripts/screener.py
+      - name: Attention note and dashboard page
+        run: |
+          python scripts/attention.py
+          python scripts/render_site.py
+      - name: Save results
+        run: |
+          git config user.name "singles-doubles-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add data output site
+          git diff --cached --quiet || git commit -m "Daily check $(date -u +%Y-%m-%d)"
+          git pull --rebase origin main && git push

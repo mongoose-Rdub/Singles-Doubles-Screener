@@ -4,7 +4,9 @@ and replays each trade under many exit rules using the actual daily bars that fo
 
 Run: python3 exits.py        Output: exit_results.pkl and a printed comparison
 """
+import os
 import pickle
+import store
 import numpy as np
 import pandas as pd
 
@@ -14,11 +16,11 @@ DOUBLE_ATR, SINGLE_ATR = 0.040, 0.028
 
 
 def load_entries():
-    P = pickle.load(open("panel.pkl", "rb"))
+    P = pickle.load(open(os.path.join(store.WORK, "panel.pkl"), "rb"))
     P = P.dropna(subset=["sma150", "atr_pct", "slope150", "stage", "stop", "atr"])
     P = P[(P.c >= 10) & (P.dvol20 >= 20e6) & (P.date >= START) & (P.atr_pct >= SINGLE_ATR)].copy()
     P["tier"] = np.where(P.atr_pct >= DOUBLE_ATR, "Double", "Single")
-    bars = pickle.load(open("bars10y.pkl", "rb"))
+    bars = store.load_bars()
     O, Hh, L, C, rows = [], [], [], [], []
     for sym, g in P.groupby("sym"):
         b = np.array(bars[sym], dtype=object)
@@ -147,7 +149,7 @@ def main():
     res.append(summarize(E, 0.5 * pnl_a + 0.5 * pnl_c, 0.5 * days_a + 0.5 * days_c, "sell half at +10%, rest trails 3 ATR after +10%, 60 days"))
 
     R = pd.DataFrame(res)
-    pickle.dump(R, open("exit_results.pkl", "wb"))
+    pickle.dump(R, open(os.path.join(store.WORK, "exit_results.pkl"), "wb"))
     pd.set_option("display.width", 250)
     for tier in ("Double", "Single"):
         cols = ["variant"] + [tier + s for s in ("_pnl", "_se", "_early", "_late", "_win", "_days", "_perday", "_worst")]
@@ -182,7 +184,7 @@ def export_dashboard():
         for tier in ("Double", "Single"):
             out.append({"tier": tier, "rule": label, "avg": r[tier + "_pnl"], "se": r[tier + "_se"], "early": r[tier + "_early"], "late": r[tier + "_late"],
                         "win": r[tier + "_win"], "days": r[tier + "_days"], "perday": r[tier + "_perday"], "worst": r[tier + "_worst"]})
-    json.dump(out, open("dashboard_data/exits.json", "w"))
+    json.dump(out, open(os.path.join(store.OUT, "exits.json"), "w"))
     print(pd.DataFrame(out).to_string(index=False))
 
 

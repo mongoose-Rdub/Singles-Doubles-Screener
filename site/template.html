@@ -1,0 +1,380 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Singles and Doubles Screener</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232557d6'/%3E%3Cpath d='M14 44l14-14 8 8 14-18' fill='none' stroke='white' stroke-width='6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f4f6fa; --card:#ffffff; --ink:#111827; --muted:#5d6675; --faint:#8a93a3; --line:#e3e7ee; --soft:#f0f3f8;
+  --accent:#2557d6; --accent-soft:#e8efff;
+  --dbl:#d9480f; --dbl-soft:#fff0e8; --sgl:#1971c2; --sgl-soft:#e7f1fc;
+  --up:#13804a; --up-soft:#e3f6ec; --down:#c62828; --down-soft:#fdeaea; --warn:#a96300; --warn-soft:#fff3d6;
+  --shadow:0 1px 2px rgba(16,24,40,.05),0 6px 20px rgba(16,24,40,.06);
+  --hero1:#14213d; --hero2:#2557d6;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0c111b; --card:#151c2a; --ink:#eef2f8; --muted:#a2adc0; --faint:#79849a; --line:#27324a; --soft:#1b2436;
+    --accent:#7aa2ff; --accent-soft:#1c2a4d;
+    --dbl:#ff9b66; --dbl-soft:#3a2418; --sgl:#6db3ff; --sgl-soft:#16293f;
+    --up:#4bd08a; --up-soft:#12301f; --down:#ff7b7b; --down-soft:#3a1a1c; --warn:#f2b84b; --warn-soft:#37290d;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.35); --hero1:#0b1220; --hero2:#1c3a8a;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0c111b; --card:#151c2a; --ink:#eef2f8; --muted:#a2adc0; --faint:#79849a; --line:#27324a; --soft:#1b2436;
+  --accent:#7aa2ff; --accent-soft:#1c2a4d;
+  --dbl:#ff9b66; --dbl-soft:#3a2418; --sgl:#6db3ff; --sgl-soft:#16293f;
+  --up:#4bd08a; --up-soft:#12301f; --down:#ff7b7b; --down-soft:#3a1a1c; --warn:#f2b84b; --warn-soft:#37290d;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.35); --hero1:#0b1220; --hero2:#1c3a8a;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-variant-numeric:tabular-nums}
+.wrap{max-width:1180px;margin:0 auto;padding:0 16px 56px}
+.hero{background:linear-gradient(135deg,var(--hero1),var(--hero2));color:#fff;padding:28px 0 76px}
+.hero .wrap{padding-bottom:0}
+.top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap}
+.eyebrow{font-size:12px;letter-spacing:.12em;text-transform:uppercase;opacity:.75;font-weight:600}
+h1{margin:6px 0 6px;font-size:clamp(26px,4.2vw,38px);line-height:1.1;font-weight:800;letter-spacing:-.02em}
+.sub{margin:0;opacity:.85;max-width:60ch}
+.badges{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+.badge{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);padding:6px 12px;border-radius:999px;font-size:13px;font-weight:500;backdrop-filter:blur(4px)}
+.badge b{font-weight:700}
+.toggle{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.28);color:#fff;border-radius:999px;padding:7px 14px;font:inherit;font-size:13px;cursor:pointer}
+.toggle:hover{background:rgba(255,255,255,.24)}
+.lift{margin-top:-52px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
+.tile{background:var(--card);border-radius:16px;padding:16px 18px;box-shadow:var(--shadow);border:1px solid var(--line)}
+.tile .k{font-size:12px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+.tile .v{font-size:30px;font-weight:800;letter-spacing:-.02em;margin-top:4px;line-height:1.1}
+.tile .n{font-size:12.5px;color:var(--muted);margin-top:4px}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:middle}
+section.card{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:22px;margin-top:20px}
+.sec-h{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+h2{margin:0;font-size:21px;font-weight:700;letter-spacing:-.01em}
+h3{margin:0 0 4px;font-size:15px}
+.note{color:var(--muted);font-size:13.5px;margin:6px 0 0;max-width:80ch}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{display:inline-flex;align-items:center;gap:5px;padding:2px 10px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap}
+.c-dbl{background:var(--dbl-soft);color:var(--dbl)} .c-sgl{background:var(--sgl-soft);color:var(--sgl)}
+.c-up{background:var(--up-soft);color:var(--up)} .c-down{background:var(--down-soft);color:var(--down)}
+.c-warn{background:var(--warn-soft);color:var(--warn)} .c-info{background:var(--accent-soft);color:var(--accent)} .c-mute{background:var(--soft);color:var(--muted)}
+.up{color:var(--up)} .down{color:var(--down)} .mute{color:var(--muted)}
+.flags{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:10px}
+.flag{border-radius:14px;padding:12px 14px;border:1px solid var(--line);border-left-width:5px;background:var(--soft)}
+.flag.act{border-left-color:var(--down);background:var(--down-soft)} .flag.watch{border-left-color:var(--warn);background:var(--warn-soft)} .flag.info{border-left-color:var(--accent);background:var(--accent-soft)}
+.flag .t{display:flex;justify-content:space-between;gap:8px;align-items:center;font-weight:700}
+.flag p{margin:4px 0 0;font-size:13.5px}
+.allclear{display:flex;gap:12px;align-items:center;padding:16px;border-radius:14px;background:var(--up-soft);color:var(--up);font-weight:600}
+.seg{display:inline-flex;background:var(--soft);border-radius:12px;padding:3px;gap:2px}
+.seg button{border:0;background:transparent;color:var(--muted);font:inherit;font-size:13.5px;font-weight:600;padding:7px 14px;border-radius:9px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--card);color:var(--ink);box-shadow:0 1px 3px rgba(16,24,40,.12)}
+.tools{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+input[type=search],select{font:inherit;font-size:14px;padding:8px 12px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink)}
+input[type=search]{min-width:200px;flex:1;max-width:320px}
+.scroll{overflow-x:auto;border:1px solid var(--line);border-radius:14px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{position:sticky;top:0;background:var(--soft);text-align:right;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;padding:10px 12px;white-space:nowrap}
+th.l,td.l{text-align:left}
+th button{all:unset;cursor:pointer}
+th button:hover{color:var(--ink)}
+td{padding:11px 12px;text-align:right;border-top:1px solid var(--line);white-space:nowrap;vertical-align:middle}
+tbody tr.row{cursor:pointer} tbody tr.row:hover td{background:var(--soft)}
+td.sym{text-align:left} .sym b{font-size:15px;font-weight:800} .sym small{display:block;color:var(--muted);font-size:12px;max-width:210px;overflow:hidden;text-overflow:ellipsis}
+.score{display:inline-flex;align-items:center;gap:8px;min-width:96px;justify-content:flex-end}
+.bar{position:relative;width:54px;height:8px;border-radius:5px;background:var(--soft);overflow:hidden}
+.bar i{position:absolute;inset:0 auto 0 0;border-radius:5px;background:var(--accent)}
+.gauge{position:relative;width:140px;height:10px;border-radius:6px;background:linear-gradient(90deg,var(--down-soft) 0 33%,var(--soft) 33% 66%,var(--up-soft) 66%);display:inline-block;vertical-align:middle}
+.gauge i{position:absolute;top:-3px;width:4px;height:16px;border-radius:2px;background:var(--ink)}
+.gauge u{position:absolute;top:1px;width:2px;height:8px;background:var(--faint);text-decoration:none}
+.detail td{background:var(--soft);text-align:left;white-space:normal;padding:14px 18px}
+.dgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.dgrid div span{display:block;font-size:11.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:600}
+.dgrid div b{font-size:16px}
+.more{display:block;margin:14px auto 0;border:1px solid var(--line);background:var(--card);color:var(--ink);font:inherit;font-weight:600;padding:9px 20px;border-radius:12px;cursor:pointer}
+.more:hover{background:var(--soft)}
+.sect{display:grid;gap:8px}
+.srow{display:grid;grid-template-columns:150px 1fr 70px;gap:12px;align-items:center;font-size:13.5px}
+.stack{display:flex;height:16px;border-radius:8px;overflow:hidden;background:var(--soft)}
+.stack i{display:block;height:100%}
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px}.grid2>*{min-width:0}
+@media(max-width:860px){.grid2{grid-template-columns:minmax(0,1fr)}.srow{grid-template-columns:110px 1fr 54px}}
+.method{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px}
+.method p{margin:0;color:var(--muted);font-size:14px}
+details.fold{margin-top:20px}
+details.fold>summary{cursor:pointer;list-style:none;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px 20px;font-weight:700;font-size:17px;box-shadow:var(--shadow);display:flex;justify-content:space-between;align-items:center}
+details.fold>summary::-webkit-details-marker{display:none}
+details.fold>summary:after{content:"Show";font-size:13px;font-weight:600;color:var(--accent)}
+details.fold[open]>summary:after{content:"Hide"}
+footer{margin-top:28px;color:var(--faint);font-size:12.5px;text-align:center}
+svg text{font-family:inherit;fill:var(--muted);font-size:11.5px}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--muted);margin:8px 0}
+.legend span:before{content:"";display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:6px;background:var(--c);vertical-align:-1px}
+@media(max-width:560px){.tile .v{font-size:25px}.card{padding:16px!important}}
+</style>
+</head>
+<body>
+<div class="hero"><div class="wrap">
+  <div class="top">
+    <div>
+      <div class="eyebrow">Swing screener for stocks over $2 billion</div>
+      <h1>Singles and Doubles Screener</h1>
+      <p class="sub">Liquid stocks with the daily range to gain 10% (a single) or 20% (a double) within two to six weeks.</p>
+    </div>
+    <button class="toggle" id="theme" type="button">Switch theme</button>
+  </div>
+  <div class="badges" id="badges"></div>
+</div></div>
+
+<div class="wrap lift">
+  <div class="tiles" id="tiles"></div>
+
+  <section class="card" id="attn">
+    <div class="sec-h"><div><h2>Needs attention</h2><p class="note" id="attn-note"></p></div><div class="chips" id="attn-chips"></div></div>
+    <div id="attn-body"></div>
+  </section>
+
+  <section class="card" id="plan">
+    <div class="sec-h"><div><h2>This week's plan</h2><p class="note" id="plan-note"></p></div>
+      <div class="seg" id="plan-seg"><button type="button" data-t="All" aria-pressed="true">All</button><button type="button" data-t="Double" aria-pressed="false">Doubles</button><button type="button" data-t="Single" aria-pressed="false">Singles</button></div></div>
+    <div class="scroll"><table><thead><tr>
+      <th class="l">Stock</th><th>Tier</th><th>Score</th><th>Entry</th><th>Last</th><th>Since plan</th><th class="l">Stop to target</th><th>Status</th></tr></thead><tbody id="plan-body"></tbody></table></div>
+    <p class="note">The plan is frozen each Monday from the top 25 Doubles and top 25 Singles by priority score. The marker shows where the price sits between the stop on the left and the target on the right. The thin tick is the entry price.</p>
+  </section>
+
+  <section class="card" id="cands">
+    <div class="sec-h"><div><h2>All current candidates</h2><p class="note" id="cands-note"></p></div>
+      <div class="seg" id="tier-seg"><button type="button" data-t="All" aria-pressed="true">All</button><button type="button" data-t="Double" aria-pressed="false">Doubles</button><button type="button" data-t="Single" aria-pressed="false">Singles</button></div></div>
+    <div class="tools"><input type="search" id="q" placeholder="Search symbol or company" aria-label="Search"><select id="sector" aria-label="Sector"><option value="">All sectors</option></select><span class="mute" id="count"></span></div>
+    <div class="scroll"><table><thead><tr id="head"></tr></thead><tbody id="body"></tbody></table></div>
+    <button class="more" id="more" type="button">Show more</button>
+    <p class="note">Click a row for more detail. Score blends relative strength (60%) and daily range (40%) and is an ordering aid only: in testing it raised the win rate but did not raise profit per trade. Stage and sector stage are shown for information because neither held up as an edge.</p>
+  </section>
+
+  <section class="card">
+    <div class="sec-h"><div><h2>Where the candidates are</h2><p class="note">Number of current candidates by sector.</p></div>
+      <div class="legend"><span style="--c:var(--dbl)">Doubles</span><span style="--c:var(--sgl)">Singles</span></div></div>
+    <div class="sect" id="sectors"></div>
+  </section>
+
+  <details class="fold" open id="evidence">
+    <summary>The evidence behind the tiers</summary>
+    <section class="card">
+      <h2>The odds rise with daily range</h2>
+      <p class="note">Share of trades that reached the target before the stop, grouped by the stock's average daily range on the day of entry. Each trade ran up to 30 trading days. Wider range also means wider stops, so these stocks win more often but risk more per trade.</p>
+      <div class="legend"><span style="--c:var(--sgl)">Reached +10%</span><span style="--c:var(--dbl)">Reached +20%</span></div>
+      <div id="odds"></div>
+    </section>
+    <div class="grid2">
+      <section class="card">
+        <div class="sec-h"><div><h2>Does the score pick better stocks?</h2><p class="note">Top 25 per tier by score each week, against the whole tier.</p></div>
+          <div class="seg" id="y-seg"><button type="button" data-t="Double" aria-pressed="true">Doubles</button><button type="button" data-t="Single" aria-pressed="false">Singles</button></div></div>
+        <div class="legend"><span style="--c:var(--faint)">Whole tier</span><span style="--c:var(--accent)">Top 25 by score</span></div>
+        <div id="year"></div>
+        <div class="scroll" style="margin-top:12px"><table><thead><tr><th class="l">Group</th><th>Win rate</th><th>Stopped out</th><th>Avg stop distance</th><th>Avg profit per trade</th></tr></thead><tbody id="sumtab"></tbody></table></div>
+        <p class="note" id="gapnote"></p>
+      </section>
+      <section class="card">
+        <h2>What else was tested</h2>
+        <p class="note">Each group split into an early period (2017 to 2021) and a later one (2022 to 2026). A signal counts only if it helped by a meaningful margin in both.</p>
+        <div class="scroll" style="max-height:440px;margin-top:12px"><table><thead><tr><th class="l">Test</th><th class="l">Group</th><th>Win, early</th><th>Win, later</th><th>Profit, early</th><th>Profit, later</th><th class="l">Result</th></tr></thead><tbody id="sigs"></tbody></table></div>
+      </section>
+    </div>
+    <section class="card">
+      <h2>Do stops and targets help?</h2>
+      <p class="note">The same trades replayed under other exit rules. Holding with no stop earned more per day than any rule with a stop, but its worst trades lost more than twice as much, so the stop mainly limits damage. None of these rules is built into the screener.</p>
+      <div class="scroll" style="margin-top:12px"><table><thead><tr><th class="l">Tier</th><th class="l">Exit rule</th><th>Avg profit per trade</th><th>Profit per day held</th><th>Win rate</th><th>Days held</th><th>Profit, early</th><th>Profit, later</th><th>Worst 2% of trades</th></tr></thead><tbody id="exits"></tbody></table></div>
+    </section>
+    <section class="card">
+      <h2>How it works</h2>
+      <div class="method" style="margin-top:12px">
+        <div><h3>The goal</h3><p>Find liquid stocks that can gain 10% or 20% within two to six weeks, so a handful of 20% moves a year can compound a portfolio.</p></div>
+        <div><h3>Two tiers</h3><p>Stocks over $2B with a price over $10 and $20M traded a day are split by average daily range. 4.0% or more is the Double tier. 2.8% up to 4.0% is the Single tier. Range was the one measure that predicted target hits in every year tested.</p></div>
+        <div><h3>How trades were tested</h3><p>Every week from September 2017, each qualifying stock was entered at the close. A trade ended at the target, at the stop, or after 30 trading days. When both traded on one day the stop was assumed first, and gaps through the stop filled at the open.</p></div>
+        <div><h3>When to look</h3><p>Entering on any weekday, or at Monday's open instead of Friday's close, gave about the same results, so a Monday plan and a daily check both rest on the data.</p></div>
+        <div><h3>What did not help</h3><p>Stage, sector stage, the SPY regime, an uptrend filter, base and pullback patterns, volume and a record of big moves all failed to help in both halves of the data.</p></div>
+        <div><h3>Limits</h3><p>Only stocks over $2B today are included, which flatters the absolute results, so rely on comparisons. Costs, taxes and earnings dates are not counted. This is research, not investment advice.</p></div>
+      </div>
+    </section>
+  </details>
+  <footer id="foot"></footer>
+</div>
+
+<script>
+const D = /*__DATA__*/null;
+const $ = s => document.querySelector(s);
+const MON = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const date = iso => { if(!iso) return "n/a"; const p = iso.slice(0,10).split("-").map(Number); return MON[p[1]-1]+" "+p[2]+", "+p[0]; };
+const dshort = iso => { if(!iso) return "n/a"; const p = iso.slice(0,10).split("-").map(Number); return MON[p[1]-1]+" "+p[2]; };
+const n0 = x => x==null?"n/a":Math.round(x).toLocaleString("en-US");
+const n1 = x => x==null?"n/a":Number(x).toFixed(1);
+const n2 = x => x==null?"n/a":Number(x).toFixed(2);
+const usd = x => x==null?"n/a":"$"+Number(x).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
+// signed percent without any minus sign: arrows carry direction
+const sp = (x,d=1) => x==null?"n/a":(x>0?'<span class="up">▲ ':x<0?'<span class="down">▼ ':'<span>')+Math.abs(x).toFixed(d)+"%</span>";
+const esc = s => String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const tierChip = t => '<span class="chip '+(t==="Double"?"c-dbl":"c-sgl")+'">'+(t==="Double"?"Double":"Single")+'</span>';
+const stageChip = s => s?'<span class="chip c-mute">'+esc(s)+'</span>':"";
+const S = (D.summary||[{}])[0];
+const A = D.attention||{flags:[],rows:[],counts:{},market:{}};
+
+try{const t=localStorage.getItem("sd-theme"); if(t) document.documentElement.dataset.theme=t;}catch(e){}
+$("#theme").onclick=()=>{const cur=document.documentElement.dataset.theme||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");const nx=cur==="dark"?"light":"dark";document.documentElement.dataset.theme=nx;try{localStorage.setItem("sd-theme",nx);}catch(e){}};
+
+// header and tiles
+const M = A.market||{};
+$("#badges").innerHTML =
+  '<span class="badge">Data through <b>'+date(S.asof)+'</b></span>'+
+  (M.spy!=null?'<span class="badge">SPY <b>'+usd(M.spy)+'</b> is '+(M.above200?'above':'below')+' its 200 day average</span>':'')+
+  (S.pct_above50!=null?'<span class="badge"><b>'+n1(S.pct_above50)+'%</b> of stocks above their 50 day average</span>':'');
+const c = A.counts||{};
+$("#tiles").innerHTML = [
+  ["Doubles now", n0(S.tier_double), "Daily range of 4.0% or more, target +20%", "var(--dbl)"],
+  ["Singles now", n0(S.tier_single), "Daily range 2.8% to 4.0%, target +10%", "var(--sgl)"],
+  ["Needs action", n0(c.act||0), (c.watch||0)+" to watch, "+(c.info||0)+" for information", (c.act?"var(--down)":"var(--up)")],
+  ["Doubles tested win rate", n1(S.d_win)+"%", "Reached +20% before the stop, "+n0(S.weeks)+" weeks tested", "var(--dbl)"],
+  ["Singles tested win rate", n1(S.s_win)+"%", "Reached +10% before the stop", "var(--sgl)"]
+].map(t=>'<div class="tile"><div class="k"><span class="dot" style="background:'+t[3]+'"></span>'+t[0]+'</div><div class="v">'+t[1]+'</div><div class="n">'+t[2]+'</div></div>').join("");
+
+// attention
+(function(){
+  $("#attn-note").textContent = "Checked after the close on "+date(S.asof)+". Plan names and any positions you list are tracked against their stops and targets.";
+  $("#attn-chips").innerHTML = '<span class="chip c-down">'+(c.act||0)+' act</span><span class="chip c-warn">'+(c.watch||0)+' watch</span><span class="chip c-info">'+(c.info||0)+' info</span>';
+  const fl = A.flags||[];
+  if(!fl.length){ $("#attn-body").innerHTML='<div class="allclear"><span style="font-size:22px">✓</span><span>Nothing needs attention today. Plan names are inside their stops and no new high priority names appeared.</span></div>'; return; }
+  const lab={act:"Act",watch:"Watch",info:"Info"};
+  $("#attn-body").innerHTML='<div class="flags">'+fl.map(f=>'<div class="flag '+f.level+'"><div class="t"><span>'+esc(f.symbol)+' <span class="mute" style="font-weight:600">'+esc(f.kind)+'</span></span><span class="chip '+(f.level==="act"?"c-down":f.level==="watch"?"c-warn":"c-info")+'">'+lab[f.level]+'</span></div><p>'+esc(f.text)+'</p></div>').join("")+'</div>';
+})();
+
+// plan
+let planTier="All";
+function gauge(r){
+  const lo=r.stop, hi=r.target, rng=hi-lo; if(!(rng>0)||r.last==null) return "";
+  const pos=Math.max(0,Math.min(1,(r.last-lo)/rng)), ent=Math.max(0,Math.min(1,(r.price-lo)/rng));
+  return '<span class="gauge" title="Stop '+usd(r.stop)+', target '+usd(r.target)+'"><u style="left:'+(ent*100)+'%"></u><i style="left:calc('+(pos*100)+'% - 2px)"></i></span>';
+}
+function statusChip(r){
+  if(r.status==="stopped") return '<span class="chip c-down">Stopped '+dshort(r.event_date)+'</span>';
+  if(r.status==="target") return '<span class="chip c-up">Target '+dshort(r.event_date)+'</span>';
+  if(r.status==="expired") return '<span class="chip c-mute">Window over</span>';
+  if(r.room_left!=null && r.room_left<0.25) return '<span class="chip c-warn">Near stop</span>';
+  return '<span class="chip c-info">Open, day '+r.days+'</span>';
+}
+function drawPlan(){
+  const rows=(A.rows||[]).filter(r=>r.source==="plan"&&(planTier==="All"||r.tier===planTier)).sort((a,b)=>b.score-a.score);
+  $("#plan-note").textContent = rows.length? "Frozen "+date(A.plan_date)+". "+rows.length+" names shown." : "No plan has been set yet. The first Monday run creates it.";
+  $("#plan-body").innerHTML = rows.map(r=>'<tr><td class="sym"><b>'+esc(r.symbol)+'</b><small>'+esc(r.name)+'</small></td><td>'+tierChip(r.tier)+'</td><td>'+n0(r.score)+'</td><td>'+usd(r.price)+'</td><td>'+usd(r.last)+'</td><td>'+sp(r.pnl_pct)+'</td><td class="l">'+gauge(r)+'</td><td>'+statusChip(r)+'</td></tr>').join("") || '<tr><td colspan="8" class="l mute">Nothing to show yet.</td></tr>';
+}
+$("#plan-seg").onclick=e=>{const b=e.target.closest("button"); if(!b) return; planTier=b.dataset.t; [...$("#plan-seg").children].forEach(x=>x.setAttribute("aria-pressed",x===b)); drawPlan();};
+drawPlan();
+
+// candidates
+const COLS=[
+ ["symbol","Stock","l"],["tier","Tier"],["score","Score"],["price","Price"],["stop","Stop"],["target","Target"],["odds","Tested odds"],["atr_pct","Daily range"],["rs","Rel. strength"],["ret63","3 months"],["stage","Stage","l"]
+];
+let tier="All", sortK="score", sortD=-1, shown=40, qtxt="", sec="";
+const C=D.candidates||[];
+[...new Set(C.map(r=>r.sector))].sort().forEach(s=>{const o=document.createElement("option");o.value=s;o.textContent=s;$("#sector").appendChild(o);});
+$("#head").innerHTML=COLS.map(c=>'<th class="'+(c[2]||"")+'"><button type="button" data-k="'+c[0]+'">'+c[1]+'</button></th>').join("");
+function cell(r,k){
+  switch(k){
+   case "symbol": return '<td class="sym"><b>'+esc(r.symbol)+'</b><small>'+esc(r.name)+'</small></td>';
+   case "tier": return '<td>'+tierChip(r.tier)+'</td>';
+   case "score": return '<td><span class="score"><span class="bar"><i style="width:'+Math.max(4,r.score)+'%"></i></span><b>'+n0(r.score)+'</b></span></td>';
+   case "price": return '<td>'+usd(r.price)+'</td>';
+   case "stop": return '<td>'+usd(r.stop)+' <span class="mute">('+n1(r.stop_pct)+'% below)</span></td>';
+   case "target": return '<td>'+usd(r.target)+'</td>';
+   case "odds": return '<td>'+n0(r.odds)+'%</td>';
+   case "atr_pct": return '<td>'+n1(r.atr_pct)+'%</td>';
+   case "rs": return '<td>'+n0(r.rs)+'</td>';
+   case "ret63": return '<td>'+sp(r.ret63,0)+'</td>';
+   case "stage": return '<td class="l">'+stageChip(r.stage)+'</td>';
+  }
+}
+function drawC(){
+  let rows=C.filter(r=>(tier==="All"||r.tier===tier)&&(!sec||r.sector===sec)&&(!qtxt||(r.symbol+" "+r.name).toLowerCase().includes(qtxt)));
+  rows.sort((a,b)=>{const x=a[sortK],y=b[sortK]; return (typeof x==="string"?x.localeCompare(y):(x-y))*sortD;});
+  $("#count").textContent=rows.length+" stocks";
+  $("#cands-note").textContent="Qualifying names as of "+date(S.asof)+", sorted by priority score.";
+  const vis=rows.slice(0,shown);
+  $("#body").innerHTML=vis.map((r,i)=>'<tr class="row" data-i="'+i+'">'+COLS.map(c=>cell(r,c[0])).join("")+'</tr>').join("");
+  $("#more").style.display=rows.length>shown?"block":"none";
+  $("#more").textContent="Show "+Math.min(40,rows.length-shown)+" more of "+(rows.length-shown)+" remaining";
+  $("#body").onclick=e=>{
+    const tr=e.target.closest("tr.row"); if(!tr) return;
+    const nx=tr.nextElementSibling; if(nx&&nx.classList.contains("detail")){nx.remove();return;}
+    const r=vis[+tr.dataset.i];
+    const d=document.createElement("tr"); d.className="detail";
+    d.innerHTML='<td colspan="'+COLS.length+'"><div class="dgrid">'+
+     [["Sector",esc(r.sector)],["Market cap","$"+n1(r.mcap_b)+"B"],["Avg dollars traded","$"+n0(r.dvol_m)+"M a day"],["1 month",sp(r.ret21,0)],["From 52 week high",r.dist_high==null?"n/a":(Math.abs(r.dist_high)<0.05?"At the high":n1(Math.abs(r.dist_high))+"% below")],["Sector stage",esc(r.sector_stage)],["Reward to risk",n2(r.rr)+" to 1"],["Target gain",tierChip(r.tier)+" "+(r.tier==="Double"?"+20%":"+10%")]]
+     .map(x=>'<div><span>'+x[0]+'</span><b>'+x[1]+'</b></div>').join("")+'</div></td>';
+    tr.after(d);
+  };
+}
+$("#head").onclick=e=>{const b=e.target.closest("button"); if(!b) return; const k=b.dataset.k; if(sortK===k) sortD*=-1; else {sortK=k; sortD=(k==="symbol"||k==="stage"||k==="tier")?1:-1;} shown=40; drawC();};
+$("#tier-seg").onclick=e=>{const b=e.target.closest("button"); if(!b) return; tier=b.dataset.t; shown=40; [...$("#tier-seg").children].forEach(x=>x.setAttribute("aria-pressed",x===b)); drawC();};
+$("#q").oninput=e=>{qtxt=e.target.value.trim().toLowerCase(); shown=40; drawC();};
+$("#sector").onchange=e=>{sec=e.target.value; shown=40; drawC();};
+$("#more").onclick=()=>{shown+=40; drawC();};
+drawC();
+
+// sectors
+(function(){
+  const m={}; C.forEach(r=>{(m[r.sector]=m[r.sector]||{Double:0,Single:0})[r.tier]++;});
+  const rows=Object.entries(m).map(([k,v])=>[k,v.Double,v.Single]).sort((a,b)=>(b[1]+b[2])-(a[1]+a[2]));
+  const mx=Math.max(...rows.map(r=>r[1]+r[2]),1);
+  $("#sectors").innerHTML=rows.map(r=>'<div class="srow"><span>'+esc(r[0])+'</span><div class="stack" style="width:'+((r[1]+r[2])/mx*100)+'%"><i style="width:'+(r[1]/(r[1]+r[2])*100)+'%;background:var(--dbl)"></i><i style="width:'+(r[2]/(r[1]+r[2])*100)+'%;background:var(--sgl)"></i></div><span class="mute">'+(r[1]+r[2])+'</span></div>').join("");
+})();
+
+// odds chart (svg)
+(function(){
+  const O=D.odds||[]; if(!O.length) return;
+  const W=900,H=300,L=40,B=64,T=12,R=10, bw=(W-L-R)/O.length, mx=Math.max(...O.map(o=>Math.max(o.win10,o.win20)),10), y=v=>T+(H-T-B)*(1-v/mx);
+  let s='<svg viewBox="0 0 '+W+' '+H+'" width="100%" role="img" aria-label="Win rate by daily range">';
+  for(let g=0;g<=4;g++){const v=mx*g/4; s+='<line x1="'+L+'" x2="'+(W-R)+'" y1="'+y(v)+'" y2="'+y(v)+'" stroke="var(--line)"/><text x="'+(L-6)+'" y="'+(y(v)+4)+'" text-anchor="end">'+Math.round(v)+'%</text>';}
+  O.forEach((o,i)=>{const x=L+i*bw+bw*0.14, w=bw*0.36;
+    s+='<rect x="'+x+'" y="'+y(o.win10)+'" width="'+w+'" height="'+(H-B-y(o.win10))+'" rx="3" fill="var(--sgl)"><title>'+o.range+': '+o.win10+'% reached +10%</title></rect>';
+    s+='<rect x="'+(x+w+3)+'" y="'+y(o.win20)+'" width="'+w+'" height="'+(H-B-y(o.win20))+'" rx="3" fill="var(--dbl)"><title>'+o.range+': '+o.win20+'% reached +20%</title></rect>';
+    s+='<text x="'+(L+i*bw+bw/2)+'" y="'+(H-B+16)+'" text-anchor="middle">'+o.range+'</text>';
+    s+='<text x="'+(L+i*bw+bw/2)+'" y="'+(H-B+32)+'" text-anchor="middle" style="font-size:10.5px">'+(o.n/1000).toFixed(0)+'k trades</text>';});
+  s+='<text x="'+(W/2)+'" y="'+(H-6)+'" text-anchor="middle">Average daily range, percent of price</text></svg>';
+  $("#odds").innerHTML=s;
+})();
+
+// by year
+let yt="Double";
+function drawY(){
+  const Y=(D.byyear||[]).filter(r=>r.tier===yt); if(!Y.length) return;
+  const W=520,H=230,L=34,B=30,T=10,R=6,bw=(W-L-R)/Y.length, mx=Math.max(...Y.map(r=>Math.max(r.win_tier,r.win_top)),10), y=v=>T+(H-T-B)*(1-v/mx);
+  let s='<svg viewBox="0 0 '+W+' '+H+'" width="100%">';
+  for(let g=0;g<=4;g++){const v=mx*g/4; s+='<line x1="'+L+'" x2="'+(W-R)+'" y1="'+y(v)+'" y2="'+y(v)+'" stroke="var(--line)"/><text x="'+(L-5)+'" y="'+(y(v)+4)+'" text-anchor="end">'+Math.round(v)+'%</text>';}
+  Y.forEach((r,i)=>{const x=L+i*bw+bw*0.12,w=bw*0.36;
+    s+='<rect x="'+x+'" y="'+y(r.win_tier)+'" width="'+w+'" height="'+(H-B-y(r.win_tier))+'" rx="3" fill="var(--faint)"><title>'+r.year+' whole tier '+r.win_tier+'%</title></rect>';
+    s+='<rect x="'+(x+w+2)+'" y="'+y(r.win_top)+'" width="'+w+'" height="'+(H-B-y(r.win_top))+'" rx="3" fill="var(--accent)"><title>'+r.year+' top 25 '+r.win_top+'%</title></rect>';
+    s+='<text x="'+(L+i*bw+bw/2)+'" y="'+(H-10)+'" text-anchor="middle">'+r.year+'</text>';});
+  $("#year").innerHTML=s+'</svg>';
+  const k=yt==="Double"?"d":"s";
+  $("#sumtab").innerHTML=[
+   [yt+" tier, whole",S[k+"_win"],S[k+"_stop"],S[k+"_avg_stop"],S[k+"_pnl"]],
+   [yt+" tier, top 25 by score",S[k+"_top_win"],null,S[k+"_top_stop"],S[k+"_top_pnl"]]
+  ].map(r=>'<tr><td class="l">'+r[0]+'</td><td>'+n1(r[1])+'%</td><td>'+(r[2]==null?"":n1(r[2])+"%")+'</td><td>'+n1(r[3])+'%</td><td>'+sp(r[4],2)+'</td></tr>').join("");
+  $("#gapnote").textContent="Profit per trade for the top 25 minus the whole tier: "+(S[k+"_gap"]>=0?"up ":"down ")+Math.abs(S[k+"_gap"]).toFixed(2)+" points (margin of error "+n2(S[k+"_gap_se"])+"). That is no reliable gain, so the score is an ordering aid only. The top 25 win more often because their stops sit further away.";
+}
+$("#y-seg").onclick=e=>{const b=e.target.closest("button"); if(!b) return; yt=b.dataset.t; [...$("#y-seg").children].forEach(x=>x.setAttribute("aria-pressed",x===b)); drawY();};
+drawY();
+
+// signals and exits
+const vcls=v=>/hold|helped/i.test(v)&&!/not|reversed|small/i.test(v)?"c-up":/reverse|hurt/i.test(v)?"c-down":"c-mute";
+$("#sigs").innerHTML=(D.signals||[]).map(r=>'<tr><td class="l">'+esc(r.group)+'</td><td class="l">'+esc(r.value)+'</td><td>'+n1(r.win_early)+'%</td><td>'+n1(r.win_late)+'%</td><td>'+sp(r.pnl_early,2)+'</td><td>'+sp(r.pnl_late,2)+'</td><td class="l"><span class="chip '+vcls(r.verdict)+'">'+esc(r.verdict)+'</span></td></tr>').join("");
+$("#exits").innerHTML=(D.exits||[]).map(r=>'<tr><td class="l">'+tierChip(r.tier)+'</td><td class="l">'+esc(r.rule)+'</td><td>'+sp(r.avg,2)+'</td><td>'+sp(r.perday,2)+'</td><td>'+n1(r.win)+'%</td><td>'+n1(r.days)+'</td><td>'+sp(r.early,2)+'</td><td>'+sp(r.late,2)+'</td><td>'+sp(r.worst,1)+'</td></tr>').join("");
+$("#foot").textContent="Prices from Nasdaq public data. Page built "+(A.generated?date(A.generated)+" at "+A.generated.slice(11,16)+" UTC":"")+". Research only, not investment advice.";
+</script>
+</body>
+</html>

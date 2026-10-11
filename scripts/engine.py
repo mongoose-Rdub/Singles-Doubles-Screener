@@ -6,10 +6,12 @@ stage (30 week average and its slope), the stage of the stock's sector, the mark
 the stock's own historical hit rates, and what happened next if you had entered at that close
 with a stop and a +10% or +20% target (30 trading day limit).
 
-Run: python3 engine.py      Output: panel.pkl
+Run: python3 scripts/engine.py      Output: work/panel.pkl
 """
 import json
+import os
 import pickle
+import store
 import numpy as np
 import pandas as pd
 from numpy.lib.stride_tricks import sliding_window_view as swv
@@ -112,8 +114,8 @@ def indicators(df):
 
 
 def build():
-    bars = pickle.load(open("bars10y.pkl", "rb"))
-    uni = {r["symbol"]: r for r in json.load(open("universe.json"))}
+    bars = store.load_bars()
+    uni = {r["symbol"]: r for r in json.load(open(store.UNIVERSE))}
     spy = pd.DataFrame(bars.pop("SPY"), columns=["date", "o", "h", "l", "c", "v"])
     spy["date"] = pd.to_datetime(spy["date"]); spy = spy.set_index("date")
     cal = spy.index
@@ -175,7 +177,8 @@ def build():
     panel = panel.merge(sp, on="date", how="left")
     panel["rs"] = panel.groupby("date")["ret63"].rank(pct=True)
     panel["mcap_b"] = panel["sym"].map(lambda s: float(uni.get(s, {}).get("marketCap", 0) or 0) / 1e9)
-    pickle.dump(panel, open("panel.pkl", "wb"))
+    os.makedirs(store.WORK, exist_ok=True)
+    pickle.dump(panel, open(os.path.join(store.WORK, "panel.pkl"), "wb"))
     print("panel rows", len(panel), "dates", panel["date"].nunique(), "stocks", panel["sym"].nunique())
     print(panel["date"].min(), panel["date"].max())
     return panel
