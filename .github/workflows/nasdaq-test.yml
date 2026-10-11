@@ -1,0 +1,15 @@
+name: Nasdaq reachability test
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Screener list
+        run: |
+          code=$(curl -s -o /tmp/s.json -w "%{http_code}" -H "User-Agent: Mozilla/5.0" -H "Accept: application/json" "https://api.nasdaq.com/api/screener/stocks?tableonly=true&limit=10&offset=0&download=true")
+          echo "screener status $code"; head -c 300 /tmp/s.json
+      - name: Historical quotes
+        run: |
+          code=$(curl -s -o /tmp/h.json -w "%{http_code}" -H "User-Agent: Mozilla/5.0" -H "Accept: application/json" "https://api.nasdaq.com/api/quote/AAPL/historical?assetclass=stocks&fromdate=2026-09-01&todate=2026-10-09&limit=100")
+          echo "history status $code"; head -c 300 /tmp/h.json
