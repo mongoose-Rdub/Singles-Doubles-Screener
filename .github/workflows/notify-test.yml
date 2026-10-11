@@ -1,0 +1,21 @@
+name: Discord test
+on:
+  workflow_dispatch:
+    inputs:
+      kind:
+        description: "weekly, daily or failed"
+        default: "weekly"
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pandas numpy
+      - name: Send a test post
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: python scripts/notify.py ${{ github.event.inputs.kind }} test

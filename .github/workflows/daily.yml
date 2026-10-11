@@ -36,3 +36,13 @@ jobs:
           git add data output site
           git diff --cached --quiet || git commit -m "Daily check $(date -u +%Y-%m-%d)"
           git pull --rebase origin main && git push
+      - name: Post to Discord
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: python scripts/notify.py daily
+      - name: Report a failure to Discord
+        if: failure()
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: python scripts/notify.py failed daily
