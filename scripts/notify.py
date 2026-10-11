@@ -56,6 +56,7 @@ def daily():
             lines.append(f"**{label}**")
             lines += [f"`{f['symbol']}` {f['kind']}: {f['text']}" for f in items[:12]]
             lines.append("")
+    lines.append(f"Checked {c['plan']} plan names and {c['positions']} of your positions. [Open the dashboard]({SITE})")
     color = RED if c["act"] else AMBER if c["watch"] else BLUE
     m = a.get("market", {})
     foot = f"Data through {nice(a['asof'])}"
@@ -67,16 +68,24 @@ def daily():
 def weekly():
     a = jload("attention.json")
     s = jload("summary.json")[0]
+    cands = {c["symbol"]: c for c in jload("candidates.json")}
     plan = [r for r in a["rows"] if r["source"] == "plan"]
-    embeds = [{"title": "Weekly plan", "url": SITE, "color": GREEN,
-               "description": f"Data through {nice(s['asof'])}. {s['tier_double']} Doubles and {s['tier_single']} Singles qualify. "
-                              f"Tracking the top 25 of each tier below.",
-               "fields": []}]
-    for tier, col in (("Double", ORANGE), ("Single", BLUE)):
-        top = sorted([r for r in plan if r["tier"] == tier], key=lambda r: -r["score"])[:10]
-        text = "\n".join(f"`{r['symbol']}` ${r['price']:.2f}  stop ${r['stop']:.2f}  target ${r['target']:.2f}" for r in top)
-        embeds.append({"title": f"Top {tier}s (target {'+20%' if tier == 'Double' else '+10%'})", "description": text or "None", "color": col})
-    embeds[-1]["footer"] = {"text": "Ordered by priority score. Full list on the dashboard."}
+    n = 10
+    intro = (f"**{s['tier_double']} Doubles and {s['tier_single']} Singles** qualify as of {nice(s['asof'])}. "
+             f"Below are the {n} highest scoring of each. The full list of {len(plan)} plan names and daily tracking are on the dashboard.\n\n"
+             f"Entry is Friday's close. The stop is where to exit if it breaks. The target is the goal. "
+             f"Odds are how often similar setups reached the target before the stop over ten years of testing.\n\n"
+             f"[Open the dashboard]({SITE})")
+    embeds = [{"title": "Weekly plan", "url": SITE, "color": GREEN, "description": intro}]
+    for tier, col, goal in (("Double", ORANGE, "+20%"), ("Single", BLUE, "+10%")):
+        top = sorted([r for r in plan if r["tier"] == tier], key=lambda r: -r["score"])[:n]
+        lines = []
+        for r in top:
+            odds = r.get("odds") or cands.get(r["symbol"], {}).get("odds")
+            lines.append(f"**{r['symbol']}**  ${r['price']:.2f}  stop ${r['stop']:.2f} ({r['stop_pct']:.0f}% below)  target ${r['target']:.2f}"
+                         + (f"  odds {odds:.0f}%" if odds else ""))
+        embeds.append({"title": f"Top {n} {tier}s, aiming for {goal}", "description": "\n".join(lines) or "None", "color": col})
+    embeds[-1]["footer"] = {"text": "Ranked by priority score. Research, not investment advice."}
     post(embeds)
 
 
