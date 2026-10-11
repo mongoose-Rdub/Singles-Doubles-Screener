@@ -7,14 +7,27 @@ and Weinstein stage screeners and changes nothing in them.
 
 ## What is here
 
-- `scripts/build_universe.py` builds `data/universe.json` from the Nasdaq screener.
-- `scripts/fetch_data.py` pulls ten years of daily bars from the Nasdaq historical API.
-- `scripts/engine.py` builds the weekly panel: trend, momentum, Weinstein style stage, sector stage, market regime, and trade outcomes.
-- `scripts/screener.py` produces the candidate list and the odds tables in `output/`.
-- `scripts/exits.py` is the exit rule study.
-- `research/` holds the exploratory analysis scripts behind the findings.
-- `data/prices/` holds ten years of daily prices as monthly compressed files.
-- `dashboard/` holds the dashboard page.
+- `scripts/update_prices.py` adds new trading days from Nasdaq's public API (`--full` refetches ten years). It checks for splits and refetches any stock whose history changed.
+- `scripts/store.py` reads and writes the price store, `data/prices/YYYY-MM.csv.gz`, one small file per month.
+- `scripts/build_universe.py` builds `data/universe.json`, the stocks over $2B.
+- `scripts/engine.py` builds the weekly panel: trend, momentum, Weinstein style stage, sector stage, market regime, trade outcomes.
+- `scripts/screener.py` writes the candidates and odds tables to `output/`.
+- `scripts/exits.py dashboard` writes the exit rule study.
+- `scripts/attention.py` tracks the weekly plan and any positions in `data/positions.json`, and writes the daily flags. `--set-plan` freezes the top 25 per tier.
+- `scripts/render_site.py` builds `site/index.html`, the standalone dashboard.
+- `research/` holds the exploratory analysis, including the entry timing study.
+
+## Schedule (GitHub Actions)
+
+- Weekly plan, Mondays 15:00 UTC (after the open): refresh universe and full history, rebuild, freeze the plan.
+- Daily check, weekdays 22:00 UTC (after the close): add new days, rebuild, flag anything needing attention.
+- Both commit their results to this repo. Cloudflare Pages serves the `site/` folder.
+
+## Your positions
+
+List trades you actually took in `data/positions.json`, for example
+`[{"symbol": "ABC", "tier": "Double", "date": "2026-10-12", "entry": 50.0, "stop": 46.0, "target": 60.0}]`.
+The daily check then tracks them like plan names.
 
 ## Method in brief
 
@@ -36,7 +49,3 @@ and Weinstein stage screeners and changes nothing in them.
 - Costs, taxes and earnings dates are not modeled.
 - Stocks with fewer than about 260 trading days of history are skipped.
 
-## Status
-
-Scripts currently read and write local pickle files. Incremental daily updates, a standalone
-dashboard page and any scheduling are not built yet. Nothing runs automatically.
