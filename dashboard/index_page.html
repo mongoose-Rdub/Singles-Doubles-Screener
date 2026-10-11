@@ -1,0 +1,545 @@
+<style>
+/* Layout: one column. Takeaway and tiles first, then the odds chart (the main evidence), then ranking and signal tests side by side, then the full candidate list, sectors, and method notes. */
+#dash-root { --dash-gutter: clamp(0.75rem, 3vw, 2rem); }
+.sd { max-width: 1240px; margin-inline: auto; display: grid; gap: var(--cds-gap-xl); font-family: var(--font-anthropic-sans); color: var(--color-fg); }
+.sd * { box-sizing: border-box; }
+.sd-eyebrow { font-size: var(--cds-font-size-caption); letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-fg-muted); margin: 0 0 var(--cds-gap-xs); }
+.sd h1 { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: clamp(2rem, 5vw, 2.8rem); line-height: 1.08; margin: 0 0 var(--cds-gap-sm); text-wrap: balance; }
+.sd-take { max-width: 70ch; font-size: var(--cds-font-size-heading); line-height: 1.5; margin: 0; }
+.sd-take b { font-weight: 600; font-variant-numeric: tabular-nums; }
+.sd h2 { font-size: var(--cds-font-size-heading); font-weight: var(--cds-font-weight-medium); margin: 0; text-wrap: balance; }
+.sd-note { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); margin: 0; line-height: 1.55; max-width: 78ch; }
+.sd-head { display: grid; gap: var(--cds-gap-xs); }
+.sd-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr)); gap: var(--cds-gap-md); }
+.sd-tile { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-md) var(--cds-pad-lg); display: grid; gap: var(--cds-gap-xs); align-content: start; min-height: 7.5rem; }
+.sd-tile .l { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.sd-tile .v { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: 2.2rem; line-height: 1.05; font-variant-numeric: tabular-nums; }
+.sd-tile .n { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); line-height: 1.4; }
+.sd-card { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-lg); display: grid; gap: var(--cds-gap-md); min-width: 0; align-content: start; }
+.sd-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 30rem), 1fr)); gap: var(--cds-gap-md); }
+.sd-chart { position: relative; min-height: 8rem; min-width: 0; }
+.sd-chart svg { display: block; }
+.sd-gt { fill: var(--color-fg); font-size: var(--cds-font-size-body); font-weight: 500; }
+.sd-bl { fill: var(--color-fg-muted); font-size: var(--cds-font-size-caption); }
+.sd-bv { fill: var(--color-fg); font-size: var(--cds-font-size-caption); font-weight: 600; font-variant-numeric: tabular-nums; }
+.sd-tick { fill: var(--color-fg); font-size: var(--cds-font-size-caption); font-weight: 600; }
+.sd-ax { fill: var(--color-fg-muted); font-size: var(--cds-font-size-caption); font-variant-numeric: tabular-nums; }
+.sd-grid-line { stroke: var(--cds-chart-grid); stroke-width: 1; }
+.sd-ref { stroke: var(--cds-chart-reference); stroke-width: 1; stroke-dasharray: 4 3; }
+.sd-fail { min-height: 8rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem; color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); }
+.sd-fail i { width: 0.375rem; height: 0.375rem; border-radius: 50%; background: var(--color-bad); display: block; }
+.sd-legend { display: flex; flex-wrap: wrap; gap: var(--cds-gap-xs) var(--cds-gap-md); font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.sd-legend span { display: inline-flex; align-items: center; gap: 0.4rem; }
+.sd-legend i { width: 0.7rem; height: 0.7rem; border-radius: 2px; display: block; }
+.sd-tip { position: absolute; pointer-events: none; z-index: 5; background: var(--cds-surface-popover); border: 1px solid var(--cds-border); border-radius: var(--cds-radius); box-shadow: var(--cds-shadow-popover); padding: var(--cds-pad-xs) var(--cds-pad-sm); font-size: var(--cds-font-size-caption); line-height: 1.5; min-width: 12rem; }
+.sd-tip .t { color: var(--cds-text-secondary); margin-bottom: 2px; }
+.sd-tip .r { display: flex; justify-content: space-between; gap: 1rem; font-variant-numeric: tabular-nums; }
+.sd-bar { display: flex; flex-wrap: wrap; gap: var(--cds-gap-sm); align-items: center; justify-content: space-between; }
+.sd-ctl { display: flex; flex-wrap: wrap; gap: var(--cds-gap-sm); align-items: center; }
+.sd-seg { display: inline-flex; border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); overflow: hidden; }
+.sd-seg button { font: inherit; font-size: var(--cds-font-size-caption); padding: 0.45rem 0.9rem; border: 0; background: transparent; color: var(--color-fg-muted); cursor: pointer; }
+.sd-seg button + button { border-left: 1px solid var(--color-border-line); }
+.sd-seg button[aria-pressed="true"] { background: var(--color-fg); color: var(--color-bg); }
+.sd-seg button:focus-visible, .sd-search:focus-visible, .sd-sel:focus-visible, .sd-th:focus-visible { outline: 2px solid var(--color-fg); outline-offset: 2px; }
+.sd-search, .sd-sel { font: inherit; font-size: var(--cds-font-size-caption); padding: 0.45rem 0.7rem; border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); background: var(--color-bg); color: var(--color-fg); min-width: 0; }
+.sd-search { width: min(100%, 13rem); }
+.sd-sel { max-width: 100%; }
+.sd-scroll { overflow: auto; max-height: 36rem; border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); background: var(--color-bg); }
+.sd table { border-collapse: collapse; width: 100%; font-size: var(--cds-font-size-caption); font-variant-numeric: tabular-nums; }
+.sd th { position: sticky; top: 0; background: var(--color-panel); text-align: right; padding: 0; white-space: nowrap; border-bottom: 1px solid var(--color-border-line); z-index: 1; }
+.sd th.l, .sd td.l { text-align: left; }
+.sd-th { font: inherit; font-weight: 600; color: var(--color-fg-muted); background: transparent; border: 0; padding: 0.6rem 0.7rem; cursor: pointer; width: 100%; text-align: inherit; }
+.sd-th:hover { color: var(--color-fg); }
+.sd th.plain, .sd th .plain { padding: 0.6rem 0.7rem; font-weight: 600; color: var(--color-fg-muted); display: block; }
+th[aria-sort="ascending"] .sd-th::after { content: " ▲"; font-size: 0.65em; }
+th[aria-sort="descending"] .sd-th::after { content: " ▼"; font-size: 0.65em; }
+.sd td { padding: 0.55rem 0.7rem; text-align: right; border-bottom: 1px solid var(--color-border-line); white-space: nowrap; }
+.sd td.sym { font-weight: 700; text-align: left; }
+.sd td.nm { text-align: left; max-width: 14rem; overflow: hidden; text-overflow: ellipsis; color: var(--color-fg-muted); }
+.sd td.up { color: var(--color-ok); }
+.sd td.dn { color: var(--color-bad); }
+.sd td.cls { text-align: left; font-weight: 600; }
+.sd td.cls[data-c="Double"] { color: var(--cds-chart-status-critical); }
+.sd td.sc { font-weight: 700; }
+.sd td.v-good { color: var(--color-ok); font-weight: 600; text-align: left; }
+.sd td.v-warn { color: var(--color-warn); font-weight: 600; text-align: left; }
+.sd td.v-mute { color: var(--color-fg-muted); text-align: left; }
+.sd td.grp { text-align: left; color: var(--color-fg-muted); }
+.sd tr:last-child td { border-bottom: 0; }
+.sd tbody tr:hover td { background: var(--color-panel); }
+.sd-mini { overflow: auto; border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); background: var(--color-bg); }
+.sd-mini th { position: static; }
+.sd-method { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 19rem), 1fr)); gap: var(--cds-gap-lg); }
+.sd-method h3 { font-size: var(--cds-font-size-body); font-weight: 600; margin: 0 0 var(--cds-gap-xs); }
+.sd-method p { margin: 0; font-size: var(--cds-font-size-caption); line-height: 1.6; color: var(--color-fg-muted); max-width: 62ch; }
+@media (prefers-reduced-motion: no-preference) { .sd-tile, .sd-card { animation: sd-in var(--cds-dur-slow) var(--cds-ease-out) both; } }
+@keyframes sd-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+</style>
+
+<div class="sd">
+  <header class="sd-head">
+    <p class="sd-eyebrow">Daily scan, data through <span data-source="summary" data-row="0" data-field="asof" data-fmt="date">—</span></p>
+    <h1>Singles and Doubles Screener</h1>
+    <p class="sd-take">Stocks volatile enough to have a realistic shot at +10% or +20% in six weeks. Filter by tier, stage or sector in the list below; the testing behind the tiers follows it.</p>
+  </header>
+
+  <section class="sd-tiles" aria-label="Scan summary">
+    <div class="sd-tile"><span class="l">Stocks that pass liquidity</span><span class="v" data-source="summary" data-row="0" data-field="liquid_now" data-fmt="int">—</span><span class="n">Over $2B, price over $10, $20M traded a day</span></div>
+    <div class="sd-tile"><span class="l">Double tier now</span><span class="v" data-source="summary" data-row="0" data-field="tier_double" data-fmt="int">—</span><span class="n">Daily range of 4.0% or more, target +20%</span></div>
+    <div class="sd-tile"><span class="l">Single tier now</span><span class="v" data-source="summary" data-row="0" data-field="tier_single" data-fmt="int">—</span><span class="n">Daily range from 2.8% to 4.0%, target +10%</span></div>
+    <div class="sd-tile"><span class="l">Trades tested</span><span class="v" data-source="summary" data-row="0" data-field="trades" data-fmt="int">—</span><span class="n">Every qualifying stock, every week</span></div>
+    <div class="sd-tile"><span class="l">Market breadth</span><span class="v" data-source="summary" data-row="0" data-field="pct_above50" data-fmt="f1" data-suffix="%">—</span><span class="n">Of liquid stocks above their 50 day average</span></div>
+  </section>
+
+  <section class="sd-card">
+    <div class="sd-head">
+      <h2>Current candidates</h2>
+      <p class="sd-note" id="sd-view-note"></p>
+    </div>
+    <div class="sd-bar">
+      <div class="sd-ctl">
+        <div class="sd-seg" role="group" aria-label="Tier">
+          <button type="button" id="sd-v-Double" aria-pressed="true">Doubles</button>
+          <button type="button" id="sd-v-Single" aria-pressed="false">Singles</button>
+          <button type="button" id="sd-v-All" aria-pressed="false">Both</button>
+        </div>
+        <label class="sd-note" for="sd-f-stage">Stock stage</label>
+        <select class="sd-sel" id="sd-f-stage">
+          <option value="all">Any stage</option><option value="1">Stage 1 base</option><option value="2">Stage 2 advance</option><option value="2e">Stage 2, early only</option><option value="3">Stage 3 top</option><option value="4">Stage 4 decline</option>
+        </select>
+        <label class="sd-note" for="sd-f-sstage">Sector stage</label>
+        <select class="sd-sel" id="sd-f-sstage">
+          <option value="all">Any sector stage</option><option value="1">Sector Stage 1</option><option value="2">Sector Stage 2</option><option value="3">Sector Stage 3</option><option value="4">Sector Stage 4</option>
+        </select>
+        <label class="sd-note" for="sd-f-sector">Sector</label>
+        <select class="sd-sel" id="sd-f-sector"><option value="all">All sectors</option></select>
+      </div>
+      <input class="sd-search" id="sd-search" type="search" placeholder="Search ticker or company" aria-label="Search ticker or company">
+    </div>
+    <div class="sd-scroll">
+      <table id="sd-table" data-source="candidates" data-row-key="symbol">
+        <thead><tr>
+          <th class="l" data-field="symbol" data-k="symbol"><button class="sd-th" type="button">Ticker</button></th>
+          <th class="l" data-field="name" data-k="name"><button class="sd-th" type="button">Company</button></th>
+          <th class="l" data-field="sector" data-k="sector"><button class="sd-th" type="button">Sector</button></th>
+          <th class="l" data-field="tier" data-k="tier"><button class="sd-th" type="button">Tier</button></th>
+          <th data-field="score" data-k="score"><button class="sd-th" type="button">Priority</button></th>
+          <th data-field="odds" data-k="odds"><button class="sd-th" type="button">Ten year odds</button></th>
+          <th data-field="price" data-k="price"><button class="sd-th" type="button">Price</button></th>
+          <th data-field="target" data-k="target"><button class="sd-th" type="button">Target</button></th>
+          <th data-field="stop" data-k="stop"><button class="sd-th" type="button">Stop</button></th>
+          <th data-field="rr" data-k="rr"><button class="sd-th" type="button">Reward/risk</button></th>
+          <th data-field="atr_pct" data-k="atr_pct"><button class="sd-th" type="button">Daily range</button></th>
+          <th data-field="rs" data-k="rs"><button class="sd-th" type="button">Rel. strength</button></th>
+          <th data-field="ret63" data-k="ret63"><button class="sd-th" type="button">3 months</button></th>
+          <th data-field="ret21" data-k="ret21"><button class="sd-th" type="button">1 month</button></th>
+          <th data-field="dist_high" data-k="dist_high"><button class="sd-th" type="button">Below high</button></th>
+          <th class="l" data-field="stage" data-k="stage"><button class="sd-th" type="button">Stock stage</button></th>
+          <th class="l" data-field="sector_stage" data-k="sector_stage"><button class="sd-th" type="button">Sector stage</button></th>
+        </tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <p class="sd-note">Ten year odds is the share of past trades in the same daily range group that reached their target before the stop, for that tier's target. It describes a group, not a forecast for one stock. Priority orders the list and has not shown extra profit in testing. Target and stop show the risk a trade would carry; the exit rule test above found they limit losses but do not add profit. Relative strength is the stock's 3 month return rank against all liquid stocks, from 0 to 100. Stage 2 early means the stock's 30 week average turned up within the last 80 trading days.</p>
+  </section>
+
+  <section class="sd-card">
+    <div class="sd-head">
+      <h2>Sectors right now</h2>
+      <p class="sd-note">Candidates per sector, with the stage of the sector itself (an equal weighted index of its liquid stocks, using the same stage rules).</p>
+    </div>
+    <div class="sd-chart" id="sd-sector" data-source="sector_mix"></div>
+    <div class="sd-legend"><span><i style="background:var(--cds-chart-status-critical)"></i>Double tier</span><span><i style="background:var(--cds-chart-muted)"></i>Single tier</span></div>
+  </section>
+
+  <section class="sd-head" id="sd-evidence-head">
+    <h2 style="font-size: var(--cds-font-size-title); font-family: var(--font-anthropic-serif); font-weight: 400;">The evidence behind the tiers</h2>
+    <p class="sd-take">Whether a stock reaches +10% or +20% within six weeks depends mostly on how much it already moves each day.
+      Across <b data-source="summary" data-row="0" data-field="weeks" data-fmt="int">—</b> weekly tests since 2017,
+      Double tier stocks reached +20% before their stop <b data-source="summary" data-row="0" data-field="d_win" data-fmt="f1" data-suffix="%">—</b> of the time
+      and Single tier stocks reached +10% <b data-source="summary" data-row="0" data-field="s_win" data-fmt="f1" data-suffix="%">—</b> of the time.
+      Stage, sector stage and market regime did not predict results consistently, so they are shown here for information and are not used to filter.
+      Stops and targets did not beat simply holding in testing, so treat them as loss limits, not as a source of profit.</p>
+  </section>
+
+  <section class="sd-card">
+    <div class="sd-head">
+      <h2>The odds rise with daily range</h2>
+      <p class="sd-note">Share of trades that reached the target before the stop, grouped by the stock's average daily range (average true range as a share of price) on the day of entry. Each trade ran up to 30 trading days. Stops sit below the 10 day low or two daily ranges under price, never closer than 3%.</p>
+    </div>
+    <div class="sd-chart" id="sd-odds" data-source="odds"></div>
+    <div class="sd-legend" id="sd-odds-legend"></div>
+    <p class="sd-note">Wider daily range means wider stops, so more volatile stocks win more often but risk more per trade. The Double tier starts at a 4.0% daily range and the Single tier at 2.8%.</p>
+  </section>
+
+  <section class="sd-grid">
+    <div class="sd-card">
+      <div class="sd-head">
+        <h2>Does the priority score pick better stocks?</h2>
+        <p class="sd-note">Each week the top 25 per tier by priority score (60% relative strength rank, 40% daily range rank) were compared with the whole tier.</p>
+      </div>
+      <div class="sd-bar">
+        <div class="sd-seg" role="group" aria-label="Tier">
+          <button type="button" id="sd-y-Double" aria-pressed="true">Double tier</button>
+          <button type="button" id="sd-y-Single" aria-pressed="false">Single tier</button>
+        </div>
+      </div>
+      <div class="sd-chart" id="sd-year" data-source="byyear"></div>
+      <div class="sd-legend" id="sd-year-legend"></div>
+      <div class="sd-mini">
+        <table>
+          <thead><tr><th class="l plain">Group</th><th class="plain">Win rate</th><th class="plain">Stopped out</th><th class="plain">Avg stop distance</th><th class="plain">Avg profit per trade</th></tr></thead>
+          <tbody>
+            <tr><td class="l">Double tier, all</td><td data-source="summary" data-row="0" data-field="d_win" data-fmt="f1" data-suffix="%">—</td><td data-source="summary" data-row="0" data-field="d_stop" data-fmt="f1" data-suffix="%">—</td><td data-source="summary" data-row="0" data-field="d_avg_stop" data-fmt="f1" data-suffix="%">—</td><td data-source="summary" data-row="0" data-field="d_pnl" data-fmt="chg2">—</td></tr>
+            <tr><td class="l">Double tier, top 25 by score</td><td data-source="summary" data-row="0" data-field="d_top_win" data-fmt="f1" data-suffix="%">—</td><td></td><td data-source="summary" data-row="0" data-field="d_top_stop" data-fmt="f1" data-suffix="%">—</td><td data-source="summary" data-row="0" data-field="d_top_pnl" data-fmt="chg2">—</td></tr>
+            <tr><td class="l">Single tier, all</td><td data-source="summary" data-row="0" data-field="s_win" data-fmt="f1" data-suffix="%">—</td><td data-source="summary" data-row="0" data-field="s_stop" data-fmt="f1" data-suffix="%">—</td><td data-source="summary" data-row="0" data-field="s_avg_stop" data-fmt="f1" data-suffix="%">—</td><td data-source="summary" data-row="0" data-field="s_pnl" data-fmt="chg2">—</td></tr>
+            <tr><td class="l">Single tier, top 25 by score</td><td data-source="summary" data-row="0" data-field="s_top_win" data-fmt="f1" data-suffix="%">—</td><td></td><td data-source="summary" data-row="0" data-field="s_top_stop" data-fmt="f1" data-suffix="%">—</td><td data-source="summary" data-row="0" data-field="s_top_pnl" data-fmt="chg2">—</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="sd-note">The top 25 win more often, but their stops sit further away (see the stop distance column), so they lose more when wrong. Weekly profit per trade for the top 25 minus the whole tier was <span data-source="summary" data-row="0" data-field="d_gap" data-fmt="chg2">—</span> for Doubles (margin of error <span data-source="summary" data-row="0" data-field="d_gap_se" data-fmt="f2" data-suffix="%">—</span>) and <span data-source="summary" data-row="0" data-field="s_gap" data-fmt="chg2">—</span> for Singles (<span data-source="summary" data-row="0" data-field="s_gap_se" data-fmt="f2" data-suffix="%">—</span>). That is no reliable gain, so the score is an ordering aid only.</p>
+    </div>
+
+    <div class="sd-card">
+      <div class="sd-head">
+        <h2>What else was tested</h2>
+        <p class="sd-note">Win rate and average profit per trade for each group, split into an early period (September 2017 to December 2021) and a later period (January 2022 to August 2026). A signal counts only if it helped by a meaningful margin in both periods.</p>
+      </div>
+      <div class="sd-scroll" style="max-height: 30rem;">
+        <table id="sd-sig" data-source="signals" data-row-key="group,value">
+          <thead><tr>
+            <th class="l" data-field="group" data-k="group"><button class="sd-th" type="button">Test</button></th>
+            <th class="l" data-field="value" data-k="value"><button class="sd-th" type="button">Group</button></th>
+            <th data-field="win_early" data-k="win_early"><button class="sd-th" type="button">Win, early</button></th>
+            <th data-field="win_late" data-k="win_late"><button class="sd-th" type="button">Win, late</button></th>
+            <th data-field="pnl_early" data-k="pnl_early"><button class="sd-th" type="button">Profit, early</button></th>
+            <th data-field="pnl_late" data-k="pnl_late"><button class="sd-th" type="button">Profit, late</button></th>
+            <th class="l" data-field="verdict" data-k="verdict"><button class="sd-th" type="button">Result</button></th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <p class="sd-note">Stage here is a simplified 30 week average version: Stage 2 when the average is rising, Stage 4 when it is falling, and a flat average is Stage 1 if the stock sits well below its 52 week high, otherwise Stage 3.</p>
+    </div>
+  </section>
+
+  <section class="sd-card">
+    <div class="sd-head">
+      <h2>Do stops and targets help?</h2>
+      <p class="sd-note">The same trades replayed under other exit rules. Holding 30 days with no stop earned more per day than any rule with a stop, but its worst trades lost more than twice as much, so the stop mainly limits damage. Rules that let winners run depend on a few very large winners, and a list of stocks that are over $2B today overstates those. For that reason none of these rules is built into the screener.</p>
+    </div>
+    <div class="sd-scroll" style="max-height: 30rem;">
+      <table id="sd-exit" data-source="exits" data-row-key="tier,rule">
+        <thead><tr>
+          <th class="l" data-field="tier"><span class="plain">Tier</span></th>
+          <th class="l" data-field="rule"><span class="plain">Exit rule</span></th>
+          <th data-field="avg"><span class="plain">Avg profit per trade</span></th>
+          <th data-field="perday"><span class="plain">Profit per day held</span></th>
+          <th data-field="win"><span class="plain">Win rate</span></th>
+          <th data-field="days"><span class="plain">Days held</span></th>
+          <th data-field="early"><span class="plain">Profit, early</span></th>
+          <th data-field="late"><span class="plain">Profit, late</span></th>
+          <th data-field="worst"><span class="plain">Worst 2% of trades</span></th>
+        </tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <p class="sd-note">Win rate here means the trade ended with a gain. Early is September 2017 to December 2021 and later is January 2022 to August 2026. Trailing stops follow the highest close minus a multiple of the stock's average daily range (ATR).</p>
+  </section>
+
+  <section class="sd-card">
+    <h2>How it works</h2>
+    <div class="sd-method">
+      <div><h3>The goal</h3><p>Find liquid stocks that can gain 10% (a single) or 20% (a double) within two to six weeks, so that a handful of 20% moves a year can compound a portfolio.</p></div>
+      <div><h3>Two tiers</h3><p>Stocks over $2B with a price over $10 and $20M traded a day are split by average daily range: 4.0% or more is the Double tier, 2.8% to under 4.0% is the Single tier. Range was the one measure that predicted target hits in every year tested.</p></div>
+      <div><h3>How trades were tested</h3><p>Every week from September 2017 to August 2026, each qualifying stock was entered at the close. The trade ended at the target, at the stop, or after 30 trading days. If both traded on one day the stop was assumed first, and gaps through the stop filled at the open.</p></div>
+      <div><h3>What did not help</h3><p>Stage, sector stage, the market regime from SPY, an uptrend filter, tight base and pullback patterns, volume, and a stock's past record of big moves all failed to help in both halves of the data. A past record of moves raised win rate but cut profit per trade.</p></div>
+      <div><h3>Limits</h3><p>Only stocks that are over $2B today and have survived are included, which flatters the absolute results, so rely on comparisons rather than the level of profit. Costs and taxes are not counted, earnings dates are not checked, and stocks with under about a year of history are skipped. This is research, not investment advice.</p></div>
+      <div><h3>Data</h3><p>Daily prices come from Nasdaq's public data, ten years for every stock in the universe, refreshed by rerunning the fetch, engine and screener scripts in that order.</p></div>
+    </div>
+  </section>
+</div>
+
+<script>
+(function () {
+  const f0 = d3.format(',.0f'), f1 = d3.format('.1f'), f2 = d3.format('.2f');
+  const fdate = d3.utcFormat('%b %-d, %Y');
+  const root = document.getElementById('dash-root') || document;
+  const q = (s, r) => (r || root).querySelector(s);
+  const qa = (s, r) => Array.from((r || root).querySelectorAll(s));
+  const st = { view: 'Double', yearTier: 'Double', sortKey: 'score', sortDir: -1, search: '', fStage: 'all', fSStage: 'all', fSector: 'all', sigKey: null, sigDir: 1 };
+
+  dash.calc('sector_mix', {
+    inputs: ['candidates'],
+    title: 'Candidates by sector',
+    description: 'Count of current candidates per sector, split by tier, with the sector stage.',
+    fn: (candidates) => {
+      const m = new Map();
+      for (const r of candidates) {
+        const k = r.sector || 'Other';
+        const o = m.get(k) || { sector: k, sector_stage: r.sector_stage, Double: 0, Single: 0, total: 0 };
+        o[r.tier] += 1; o.total += 1; m.set(k, o);
+      }
+      return Array.from(m.values()).sort((a, b) => b.total - a.total);
+    }
+  });
+
+  const fmtVal = (v, kind) => {
+    if (v === null || v === undefined || v === '') return '—';
+    if (kind === 'int') return f0(v);
+    if (kind === 'f1') return f1(v);
+    if (kind === 'f2') return f2(v);
+    if (kind === 'date') return fdate(new Date(v + 'T00:00:00Z'));
+    if (kind === 'chg2') return (v < 0 ? '▼ ' : '▲ ') + f2(Math.abs(v)) + '%';
+    return String(v);
+  };
+  const fail = (el) => {
+    const d = document.createElement('div'); d.className = 'sd-fail';
+    const i = document.createElement('i'); const s = document.createElement('span'); s.textContent = 'Failed to load';
+    d.append(i, s); el.replaceChildren(d);
+  };
+  const tw = (svg, txt, cls) => { const t = svg.append('text').attr('class', cls).text(txt); const w = t.node().getComputedTextLength(); t.remove(); return w; };
+  const mkLegend = (el, items) => {
+    el.replaceChildren();
+    items.forEach(([c, n]) => { const s = document.createElement('span'); const i = document.createElement('i'); i.style.background = c; s.append(i, document.createTextNode(n)); el.appendChild(s); });
+  };
+  const tipFor = (el) => { const t = document.createElement('div'); t.className = 'sd-tip'; t.hidden = true; el.appendChild(t); return t; };
+  const showTip = (tip, el, ev, title, lines) => {
+    tip.replaceChildren();
+    const t = document.createElement('div'); t.className = 't'; t.textContent = title; tip.appendChild(t);
+    lines.forEach(([a, b]) => { const r = document.createElement('div'); r.className = 'r'; const x = document.createElement('span'); x.textContent = a; const y = document.createElement('span'); y.textContent = b; r.append(x, y); tip.appendChild(r); });
+    tip.hidden = false;
+    const b = el.getBoundingClientRect();
+    const tx = Math.min(Math.max(ev.clientX - b.left + 14, 0), Math.max(el.clientWidth - tip.offsetWidth, 0));
+    const ty = Math.min(Math.max(ev.clientY - b.top - tip.offsetHeight - 8, 0), Math.max(el.clientHeight - tip.offsetHeight, 0));
+    tip.style.left = tx + 'px'; tip.style.top = ty + 'px';
+  };
+
+  function fillMarks() {
+    qa('[data-fmt]').forEach((el) => {
+      const ds = dash.data(el.dataset.source);
+      if (ds.status !== 'ok') return;
+      const row = ds.data[Number(el.dataset.row || 0)];
+      if (!row) return;
+      const val = row[el.dataset.field];
+      let txt = fmtVal(val, el.dataset.fmt);
+      if (el.dataset.suffix && val !== null && val !== undefined) txt += el.dataset.suffix;
+      el.textContent = txt;
+      if (el.dataset.fmt === 'chg2') el.style.color = val < 0 ? 'var(--color-bad)' : 'var(--color-ok)';
+    });
+  }
+
+  function drawOdds() {
+    const el = q('#sd-odds'); const O = dash.data('odds');
+    if (O.status === 'error') { fail(el); return; }
+    if (O.status !== 'ok' || !O.data.length) return;
+    const rows = O.data;
+    const W = Math.max(el.clientWidth, 280), narrow = W < 480;
+    el.replaceChildren();
+    const svg = d3.select(el).append('svg').attr('width', '100%');
+    const lw = Math.ceil(d3.max(rows, (r) => tw(svg, r.range, 'sd-bl'))) + 14;
+    const max = Math.ceil(d3.max(rows, (r) => Math.max(r.win10, r.win20)) / 10) * 10 + 5;
+    const x = d3.scaleLinear([0, max], [lw, W - 46]);
+    const bh = 13, bg = 3, rg = 12, rh = bh * 2 + bg + rg;
+    const tip = tipFor(el);
+    [0, 10, 20, 30, 40, 50].filter((t) => t <= max).forEach((t) => {
+      svg.append('line').attr('class', 'sd-grid-line').attr('x1', x(t)).attr('x2', x(t)).attr('y1', 0).attr('y2', rows.length * rh);
+      svg.append('text').attr('class', 'sd-ax').attr('text-anchor', t === 0 ? 'start' : 'middle').attr('x', x(t)).attr('y', rows.length * rh + 14).text(t + '%');
+    });
+    rows.forEach((r, i) => {
+      const y = i * rh;
+      svg.append('text').attr('class', 'sd-bl').attr('x', 0).attr('y', y + bh + 4).text(r.range);
+      svg.append('rect').attr('x', x(0)).attr('y', y).attr('height', bh).attr('width', Math.max(x(r.win10) - x(0), 1)).attr('rx', 3).style('fill', dash.colors[0]);
+      svg.append('rect').attr('x', x(0)).attr('y', y + bh + bg).attr('height', bh).attr('width', Math.max(x(r.win20) - x(0), 1)).attr('rx', 3).style('fill', dash.colors[1]);
+      if (!narrow) {
+        svg.append('text').attr('class', 'sd-bv').attr('x', x(r.win10) + 6).attr('y', y + bh - 2).text(f1(r.win10) + '%');
+        svg.append('text').attr('class', 'sd-bv').attr('x', x(r.win20) + 6).attr('y', y + bh * 2 + bg - 2).text(f1(r.win20) + '%');
+      }
+      svg.append('rect').attr('x', 0).attr('y', y - rg / 2).attr('width', W).attr('height', rh).style('fill', 'transparent')
+        .on('mousemove', (ev) => showTip(tip, el, ev, 'Daily range ' + r.range + '%, ' + f0(r.n) + ' trades', [
+          ['Hit +10% first', f1(r.win10) + '%'], ['Hit +20% first', f1(r.win20) + '%'],
+          ['Stopped out (+10% trades)', f1(r.stop10) + '%'], ['Stopped out (+20% trades)', f1(r.stop20) + '%'],
+          ['Average stop distance', f1(r.avg_stop) + '%'],
+          ['Avg profit, +10% trades', (r.pnl10 < 0 ? '▼ ' : '▲ ') + f2(Math.abs(r.pnl10)) + '%'], ['Avg profit, +20% trades', (r.pnl20 < 0 ? '▼ ' : '▲ ') + f2(Math.abs(r.pnl20)) + '%']]))
+        .on('mouseleave', () => { tip.hidden = true; });
+    });
+    const idx = rows.findIndex((r) => r.range.startsWith('4.0'));
+    if (idx > 0) {
+      const yy = idx * rh - rg / 2;
+      svg.append('line').attr('class', 'sd-ref').attr('x1', lw).attr('x2', W - 46).attr('y1', yy).attr('y2', yy);
+      svg.append('text').attr('class', 'sd-ax').attr('text-anchor', 'end').attr('x', W - 46).attr('y', yy - 4).text('Double tier starts');
+    }
+    const H = rows.length * rh + 20;
+    svg.attr('viewBox', '0 0 ' + W + ' ' + H); el.style.minHeight = H + 'px';
+    mkLegend(q('#sd-odds-legend'), [[dash.colors[0], 'Reached +10% before the stop'], [dash.colors[1], 'Reached +20% before the stop']]);
+  }
+
+  function drawYear() {
+    const el = q('#sd-year'); const Y = dash.data('byyear');
+    if (Y.status === 'error') { fail(el); return; }
+    if (Y.status !== 'ok') return;
+    const rows = Y.data.filter((r) => r.tier === st.yearTier).sort((a, b) => a.year - b.year);
+    const W = Math.max(el.clientWidth, 280), narrow = W < 520;
+    el.replaceChildren();
+    const svg = d3.select(el).append('svg').attr('width', '100%');
+    const m = { l: 34, r: 6, t: 16, b: 22 }, ph = 190;
+    const max = Math.ceil(d3.max(rows, (r) => Math.max(r.win_tier, r.win_top)) / 10) * 10;
+    const x0 = d3.scaleBand(rows.map((r) => r.year), [m.l, W - m.r]).paddingInner(0.2);
+    const x1 = d3.scaleBand([0, 1], [0, x0.bandwidth()]).padding(0.08);
+    const y = d3.scaleLinear([0, max], [m.t + ph, m.t]);
+    const tip = tipFor(el);
+    y.ticks(4).forEach((t) => {
+      svg.append('line').attr('class', 'sd-grid-line').attr('x1', m.l).attr('x2', W - m.r).attr('y1', y(t)).attr('y2', y(t));
+      svg.append('text').attr('class', 'sd-ax').attr('text-anchor', 'end').attr('x', m.l - 6).attr('y', y(t) + 4).text(t + '%');
+    });
+    rows.forEach((r) => {
+      const gx = x0(r.year);
+      [[r.win_tier, 0, 'var(--cds-chart-muted)'], [r.win_top, 1, dash.colors[0]]].forEach(([v, i, col]) => {
+        svg.append('rect').attr('x', gx + x1(i)).attr('y', y(v)).attr('width', x1.bandwidth()).attr('height', y(0) - y(v)).attr('rx', 2).style('fill', col);
+      });
+      svg.append('text').attr('class', 'sd-ax').attr('text-anchor', 'middle').attr('x', gx + x0.bandwidth() / 2).attr('y', m.t + ph + 15).text(narrow ? String(r.year).slice(2) : (r.year === 2026 ? '2026 so far' : r.year));
+      svg.append('rect').attr('x', gx).attr('y', 0).attr('width', x0.bandwidth()).attr('height', m.t + ph).style('fill', 'transparent')
+        .on('mousemove', (ev) => showTip(tip, el, ev, r.year + ', ' + st.yearTier + ' tier', [
+          ['Whole tier win rate', f1(r.win_tier) + '%'], ['Top 25 win rate', f1(r.win_top) + '%'],
+          ['Whole tier avg profit', (r.pnl_tier < 0 ? '▼ ' : '▲ ') + f2(Math.abs(r.pnl_tier)) + '%'], ['Top 25 avg profit', (r.pnl_top < 0 ? '▼ ' : '▲ ') + f2(Math.abs(r.pnl_top)) + '%'],
+          ['Avg stop, whole tier', f1(r.stop_tier) + '%'], ['Avg stop, top 25', f1(r.stop_top) + '%']]))
+        .on('mouseleave', () => { tip.hidden = true; });
+    });
+    const H = m.t + ph + 26;
+    svg.attr('viewBox', '0 0 ' + W + ' ' + H); el.style.minHeight = H + 'px';
+    mkLegend(q('#sd-year-legend'), [['var(--cds-chart-muted)', 'Whole tier win rate'], [dash.colors[0], 'Top 25 by priority score']]);
+    ['Double', 'Single'].forEach((t) => q('#sd-y-' + t).setAttribute('aria-pressed', String(t === st.yearTier)));
+  }
+
+  function drawSector() {
+    const el = q('#sd-sector'); const M = dash.data('sector_mix');
+    if (M.status === 'error') { fail(el); return; }
+    if (M.status !== 'ok' || !M.data.length) return;
+    const rows = M.data;
+    const W = Math.max(el.clientWidth, 280);
+    el.replaceChildren();
+    const svg = d3.select(el).append('svg').attr('width', '100%');
+    const lw = Math.ceil(d3.max(rows, (r) => tw(svg, r.sector, 'sd-bl'))) + 12;
+    const sw = Math.ceil(d3.max(rows, (r) => tw(svg, 'Sector stage ' + r.sector_stage, 'sd-ax'))) + 8;
+    const max = d3.max(rows, (r) => r.total);
+    const x = d3.scaleLinear([0, max], [lw, Math.max(W - sw - 44, lw + 60)]);
+    const rh = 20, gap = 8;
+    rows.forEach((r, i) => {
+      const y = i * (rh + gap);
+      svg.append('text').attr('class', 'sd-bl').attr('x', 0).attr('y', y + rh / 2 + 4).text(r.sector);
+      svg.append('rect').attr('x', x(0)).attr('y', y).attr('height', rh).attr('width', Math.max(x(r.Double) - x(0), 0)).style('fill', 'var(--cds-chart-status-critical)');
+      svg.append('rect').attr('x', x(r.Double)).attr('y', y).attr('height', rh).attr('width', Math.max(x(r.Double + r.Single) - x(r.Double), 0)).style('fill', 'var(--cds-chart-muted)');
+      svg.append('text').attr('class', 'sd-bv').attr('x', x(r.total) + 6).attr('y', y + rh / 2 + 4).text(r.total);
+      svg.append('text').attr('class', 'sd-ax').attr('text-anchor', 'end').attr('x', W).attr('y', y + rh / 2 + 4).text('Sector stage ' + r.sector_stage);
+    });
+    const H = rows.length * (rh + gap);
+    svg.attr('viewBox', '0 0 ' + W + ' ' + H); el.style.minHeight = H + 'px';
+  }
+
+  const CCOLS = ['symbol', 'name', 'sector', 'tier', 'score', 'odds', 'price', 'target', 'stop', 'rr', 'atr_pct', 'rs', 'ret63', 'ret21', 'dist_high', 'stage', 'sector_stage'];
+  const TEXTCOLS = ['symbol', 'name', 'sector', 'tier', 'stage', 'sector_stage'];
+  const usd = d3.format(',.2f');
+
+  function cell(tr, k, r) {
+    const td = document.createElement('td'); let t = '';
+    if (k === 'symbol') { td.className = 'sym'; t = r.symbol; }
+    else if (k === 'name') { td.className = 'nm'; t = r.name; td.title = r.name; }
+    else if (k === 'sector') { td.className = 'l'; t = r.sector; }
+    else if (k === 'tier') { td.className = 'cls'; td.dataset.c = r.tier; t = r.tier; }
+    else if (k === 'score') { td.className = 'sc'; t = f1(r.score); }
+    else if (k === 'odds') t = f1(r.odds) + '%';
+    else if (k === 'price' || k === 'target' || k === 'stop') t = '$' + usd(r[k]);
+    else if (k === 'rr') t = f1(r.rr) + 'x';
+    else if (k === 'atr_pct') t = f1(r.atr_pct) + '%';
+    else if (k === 'rs') t = f0(r.rs);
+    else if (k === 'ret63' || k === 'ret21') { const v = r[k]; td.className = v < 0 ? 'dn' : 'up'; t = (v < 0 ? '▼ ' : '▲ ') + f1(Math.abs(v)) + '%'; }
+    else if (k === 'dist_high') t = f1(Math.abs(r.dist_high)) + '%';
+    else if (k === 'stage') { td.className = 'l'; t = r.stage; }
+    else if (k === 'sector_stage') { td.className = 'l'; t = r.sector_stage; }
+    td.textContent = t; tr.appendChild(td);
+  }
+
+  function renderTable() {
+    const C = dash.data('candidates'); const tb = q('#sd-table tbody');
+    if (C.status !== 'ok') return;
+    const sel = q('#sd-f-sector');
+    if (sel.options.length <= 1) {
+      Array.from(new Set(C.data.map((r) => r.sector))).sort().forEach((s) => { const o = document.createElement('option'); o.value = s; o.textContent = s; sel.appendChild(o); });
+    }
+    let rows = C.data.slice();
+    if (st.view !== 'All') rows = rows.filter((r) => r.tier === st.view);
+    if (st.fStage !== 'all') rows = rows.filter((r) => st.fStage === '2e' ? r.stage === '2 Advance early' : r.stage.charAt(0) === st.fStage);
+    if (st.fSStage !== 'all') rows = rows.filter((r) => r.sector_stage.charAt(0) === st.fSStage);
+    if (st.fSector !== 'all') rows = rows.filter((r) => r.sector === st.fSector);
+    const s = st.search.trim().toLowerCase();
+    if (s) rows = rows.filter((r) => (r.symbol + ' ' + r.name).toLowerCase().includes(s));
+    const k = st.sortKey, d = st.sortDir;
+    rows.sort((a, b) => (typeof a[k] === 'string' ? a[k].localeCompare(b[k]) : a[k] - b[k]) * d);
+    tb.replaceChildren();
+    rows.forEach((r) => { const tr = document.createElement('tr'); tr.dataset.key = r.symbol; CCOLS.forEach((c) => cell(tr, c, r)); tb.appendChild(tr); });
+    qa('#sd-table th').forEach((th) => th.setAttribute('aria-sort', th.dataset.k === k ? (d > 0 ? 'ascending' : 'descending') : 'none'));
+    ['Double', 'Single', 'All'].forEach((v) => q('#sd-v-' + v).setAttribute('aria-pressed', String(v === st.view)));
+    const tierTxt = st.view === 'Double' ? 'Doubles: daily range of 4.0% or more, target +20%.' : (st.view === 'Single' ? 'Singles: daily range from 2.8% to 4.0%, target +10%.' : 'Both tiers, doubles aim for +20% and singles for +10%.');
+    q('#sd-view-note').textContent = tierTxt + ' Showing ' + f0(rows.length) + ' of ' + f0(C.data.length) + ' stocks. Click a column heading to sort.';
+  }
+
+  const SIGCOLS = ['group', 'value', 'win_early', 'win_late', 'pnl_early', 'pnl_late', 'verdict'];
+  function renderSignals() {
+    const S = dash.data('signals'); const tb = q('#sd-sig tbody');
+    if (S.status !== 'ok') return;
+    let rows = S.data.slice();
+    if (st.sigKey) rows.sort((a, b) => (typeof a[st.sigKey] === 'string' ? a[st.sigKey].localeCompare(b[st.sigKey]) : a[st.sigKey] - b[st.sigKey]) * st.sigDir);
+    tb.replaceChildren();
+    rows.forEach((r) => {
+      const tr = document.createElement('tr'); tr.dataset.key = encodeURIComponent(r.group) + ',' + encodeURIComponent(r.value);
+      SIGCOLS.forEach((k) => {
+        const td = document.createElement('td'); let t = '';
+        if (k === 'group') { td.className = 'grp'; t = r.group; }
+        else if (k === 'value') { td.className = 'l'; t = r.value; }
+        else if (k === 'win_early' || k === 'win_late') t = r[k] === null ? '—' : f1(r[k]) + '%';
+        else if (k === 'pnl_early' || k === 'pnl_late') { const v = r[k]; if (v === null) t = '—'; else { td.className = v < 0 ? 'dn' : 'up'; t = (v < 0 ? '▼ ' : '▲ ') + f2(Math.abs(v)) + '%'; } }
+        else if (k === 'verdict') { td.className = r.verdict === 'Held in both periods' ? 'v-good' : (r.verdict === 'Reversed between periods' ? 'v-warn' : 'v-mute'); t = r.verdict; }
+        td.textContent = t; tr.appendChild(td);
+      });
+      tb.appendChild(tr);
+    });
+    qa('#sd-sig th').forEach((th) => th.setAttribute('aria-sort', th.dataset.k === st.sigKey ? (st.sigDir > 0 ? 'ascending' : 'descending') : 'none'));
+  }
+
+  function renderExits() {
+    const X = dash.data('exits'); const tb = q('#sd-exit tbody');
+    if (X.status !== 'ok') return;
+    const order = ['Double', 'Single'];
+    const rows = X.data.slice().sort((a, b) => order.indexOf(a.tier) - order.indexOf(b.tier));
+    tb.replaceChildren();
+    rows.forEach((r) => {
+      const tr = document.createElement('tr'); tr.dataset.key = encodeURIComponent(r.tier) + ',' + encodeURIComponent(r.rule);
+      const cells = [['tier', r.tier, 'grp'], ['rule', r.rule, 'l'], ['avg', (r.avg < 0 ? '▼ ' : '▲ ') + f2(Math.abs(r.avg)) + '%', r.avg < 0 ? 'dn' : 'up'],
+        ['perday', f2(r.perday * 1) === '' ? '' : d3.format('.3f')(r.perday) + '%', ''], ['win', f1(r.win) + '%', ''], ['days', f1(r.days), ''],
+        ['early', (r.early < 0 ? '▼ ' : '▲ ') + f2(Math.abs(r.early)) + '%', r.early < 0 ? 'dn' : 'up'], ['late', (r.late < 0 ? '▼ ' : '▲ ') + f2(Math.abs(r.late)) + '%', r.late < 0 ? 'dn' : 'up'],
+        ['worst', (r.worst < 0 ? '▼ ' : '▲ ') + f1(Math.abs(r.worst)) + '%', 'dn']];
+      cells.forEach(([k, t, c]) => { const td = document.createElement('td'); td.className = c; td.textContent = t; tr.appendChild(td); });
+      tb.appendChild(tr);
+    });
+  }
+
+  qa('#sd-table th').forEach((th) => th.addEventListener('click', () => {
+    const k = th.dataset.k;
+    if (st.sortKey === k) st.sortDir *= -1; else { st.sortKey = k; st.sortDir = TEXTCOLS.includes(k) ? 1 : -1; }
+    renderTable();
+  }));
+  qa('#sd-sig th').forEach((th) => th.addEventListener('click', () => {
+    const k = th.dataset.k;
+    if (st.sigKey === k) st.sigDir *= -1; else { st.sigKey = k; st.sigDir = 1; }
+    renderSignals();
+  }));
+  ['Double', 'Single', 'All'].forEach((v) => q('#sd-v-' + v).addEventListener('click', () => { st.view = v; renderTable(); }));
+  ['Double', 'Single'].forEach((v) => q('#sd-y-' + v).addEventListener('click', () => { st.yearTier = v; drawYear(); }));
+  q('#sd-search').addEventListener('input', (e) => { st.search = e.target.value; renderTable(); });
+  q('#sd-f-stage').addEventListener('change', (e) => { st.fStage = e.target.value; renderTable(); });
+  q('#sd-f-sstage').addEventListener('change', (e) => { st.fSStage = e.target.value; renderTable(); });
+  q('#sd-f-sector').addEventListener('change', (e) => { st.fSector = e.target.value; renderTable(); });
+
+  dash.onData(() => { fillMarks(); drawOdds(); drawYear(); drawSector(); renderTable(); renderSignals(); renderExits(); });
+})();
+</script>

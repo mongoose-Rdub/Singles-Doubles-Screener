@@ -1,0 +1,5 @@
+*.pkl
+__pycache__/
+*.pyc
+bars.json
+universe_raw.json
